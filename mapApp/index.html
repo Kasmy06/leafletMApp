@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Localisation des acteurs, wiagri</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css" integrity="sha384-zCbKRCUGaJDkqS1kPbPd7TveP5iyJE0EjAuZQTgFLD2ylzuqKfdKlfG/eSrtxUkn" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" integrity="sha512-07I2e+7D8p6he1SIM+1twR5TIrhUQn9+I6yjqD53JQjFiMf8EtC93ty0/5vJTZGF8aAocvHYNEDJajGdNx1IsQ==" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet-src.js" integrity="sha512-WXoSHqw/t26DszhdMhOXOkI7qCiv5QWXhH9R7CgvgZMHz1ImlkVQ3uNsiQKu5wwbbxtPzFXd1hK4tzno2VqhpA==" crossorigin=""></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="screen.css" />
+
+    <link rel="stylesheet" href="./dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="./dist/MarkerCluster.Default.css" />
+    <script src="./dist/leaflet.markercluster-src.js"></script> <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+
+    <style media="screen">
+        
+        .loader{
+            position: fixed;
+            z-index: 99;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .loader > img{
+            width: 100px;
+        }
+.loader.hidden{
+    animation: fadeOut 10s;
+    animation-fill-mode: forwards;
+}
+
+        @keyframes fadeOut{
+            100%{
+                opacity: 0;
+                visibility: hidden;
+            }
+        }
+        .thumb {
+            height: 100px;
+            border: 1px solid black;
+            margin: 10px;
+        }
+    </style>
+
+</head>
+
+<body>
+            <!-- <div class="loader hidden">
+                <img src="loading.gif" alt="loading">
+            </div> -->
+            <div class="container">
+                <div class="text-center py-5">
+                    <div class=" card card-body" style="
+                    background-color: #80808078;
+                ">    
+        <div class="menu">
+              <input type="checkbox" name="check" id="check1" onclick="chekbox()"  value="Producteurs" >
+              <label class="allCheck"  for=""  style="background-color:rgb(13,202,240) ;" > Producteurs</label>
+              <input type="checkbox" name="check" id="check2" onclick="chekbox()" value="Acheteurs" >
+              <label class="allCheck"    style="background-color:rgb(25,135,84) ;" > Acheteurs</label>
+              <input type="checkbox" name="check" id="check3" onclick="chekbox()"  value="Transporteurs">
+              <label class="allCheck"  for=""  style="background-color:rgb(33,37,41) ;" > Transporteurs</label>
+              <input type="checkbox"name="check" id="check4" onclick="chekbox()" value="Vendeur d'intrants" >
+              <label class="allCheck"  for=" " style="background-color:rgb(220,53,69) ;" > Vendeur d'intrants</label>
+              <input type="checkbox" name="check" id="check5" onclick="chekbox()" value="Transformateurs"  >
+              <label class="allCheck"  for=""  style="background-color:rgb(255,193,7) ;" > Transformateurs</label>
+              <input type="checkbox" name="check"  id="check6" onclick="chekbox()" value="Pisteurs">
+              <label class="allCheck"  for=""  style="background-color:rgb(47,79,79) ;" > Pisteurs</label>
+              <input type="checkbox" name="Allcheck" value="1" onclick="ckeckUncheck()" >
+              <label class="allCheck"  for=""  style="background-color:rgb(25,135,84) ;"> All check</label>
+        </div>
+            <div class="card card-body">
+                
+                <div class="responsive">
+                    <div id="map">
+                    </div>
+                </div>
+                
+            </div>
+            
+        </div>
+    </div>
+
+    
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-fQybjgWLrvvRgtW6bFlB7jaZrFsaBXjsOMm/tB9LTS58ONXgqbR9W8oWht/amnpF" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script type="text/javascript">
+        var tiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 38,
+                attribution: '&copy; <a href="https://wi-agri.com/wiagri/">wiagri</a> contributors'
+            }),
+            latlng = L.latLng(7.539989, -5.547080);
+
+        var map = L.map(
+            'map', {
+                center: latlng,
+                zoom: 7,
+                layers: [tiles]
+            }
+        );
+
+        var markers = L.markerClusterGroup({
+            spiderfyOnMaxZoom: false,
+            showCoverageOnHover: false,
+            zoomToBoundsOnClick: false,
+        });
+
+        function populate(data) {
+            var acheteur = data.Acheteur,
+                Fourndintrants = data.Fournisseurdintrants,
+                Pisteur = data.Pisteur;
+                Transformateur = data.Transformateur;
+                Transporteur = data.Transporteur;
+
+            for (var i = 0; i < data.length; i++) {
+                const LngLat = data[i].lng_lat.split(",");
+                var latLngToAdd = L.latLng(
+                    LngLat[0],
+                    LngLat[1]
+                );
+
+                var m = L.marker(latLngToAdd);
+                m._latlng["auguinard_kouame"] = data[i].type_acteur;
+
+                markers.addLayer(m);
+            }
+
+            return false;
+        }
+
+        function coordinateRetrievalFromApi(handleData) {
+            $.ajax({
+                url: 'http://192.168.4.241/rest-api-repo/public/api/location/wiagri-actors',
+                type: 'GET',
+                dataType: 'json',
+                success: function(data, textStatus, jqXHR) {
+                    populate(data.data);
+                    return data;
+                },
+                error: function(a, b, c) {
+                    console.log(
+                        'something went wrong:',
+                        a,
+                        b,
+                        c
+                    );
+                }
+            });
+        }
+
+
+                  
+    function chekbox() {
+        var listeMembre = [];
+        $.each($("input[name='check']:checked"), function() {
+            listeMembre.push(''+$(this).val()+'"');
+        
+        });
+        var  JsonValues =  [listeMembre.join(",")];
+        console.log(JsonValues);
+    
+var postData = {'"actors"':["Acheteur", "Transporteur"]};
+
+ $.ajax({
+    url: 'http://192.168.4.241/rest-api-repo/public/api/location/wiagri-actors/filter-by-checked',
+    type: 'POST',
+    contentType: 'application/json',
+    data: JSON.stringify(postData), 
+    success: function(response){
+       alert(response);
+    },
+    error: function(){
+        alert('error');
+    }
+});
+
+    }
+
+        function ckeckUncheck(){
+            var  Check = $("input[name='Allcheck']:checked").length;;
+
+            // console.log(Check);
+
+            if( Check == 1){
+              const element1 = document.getElementById("check1");
+                    element1.checked = true;
+            const element2 = document.getElementById("check2");
+                    element2.checked = true;
+            const element3 = document.getElementById("check3");
+                    element3.checked = true;
+                    element3.checked = true;
+            const element4 = document.getElementById("check4");
+                    element4.checked = true;
+            const element5 = document.getElementById("check5");
+                    element5.checked = true;
+            const element6 = document.getElementById("check6");
+                    element6.checked = true;
+        
+
+                }else if(Check == 0){
+                    const element1 = document.getElementById("check1");
+                         element1.checked = false;
+                         const element2 = document.getElementById("check2");
+                        element2.checked = false;
+                        const element3 = document.getElementById("check3");
+                        element3.checked = false;
+                        const element4 = document.getElementById("check4");
+                        element4.checked = false;
+                        const element5 = document.getElementById("check5");
+                        element5.checked = false;
+                        const element6 = document.getElementById("check6");
+                        element6.checked = false;
+                }
+              
+        }
+        
+    
+
+
+
+        var polygon;
+        markers.on('clustermouseover', function(a) {
+            if (polygon) {
+                map.removeLayer(polygon);
+            }
+            polygon = L.polygon(a.layer.getConvexHull());
+            map.addLayer(polygon);
+        });
+
+        markers.on('clustermouseout', function(a) {
+            if (polygon) {
+                map.removeLayer(polygon);
+                polygon = null;
+            }
+        });
+
+        map.on('zoomend', function() {
+            if (polygon) {
+                map.removeLayer(polygon);
+                polygon = null;
+            }
+        });
+
+        coordinateRetrievalFromApi();
+        map.addLayer(markers);
+    </script>
+
+</body>
+
+</html>
